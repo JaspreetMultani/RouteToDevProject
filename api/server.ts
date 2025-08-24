@@ -180,12 +180,25 @@ app.get('/test', (req, res) => {
 // Add migration route (remove this after migrations are done)
 app.get('/migrate', async (req, res) => {
     try {
+        // Test database connection first
+        await prisma.$connect();
+        console.log('Database connection successful');
+        
+        // Try to push the schema directly (alternative to migrations)
         const { execSync } = require('child_process');
-        execSync('npx prisma migrate deploy', { stdio: 'inherit' });
-        res.json({ message: 'Migrations completed successfully!' });
+        const result = execSync('npx prisma db push --schema=./prisma/schema.prisma', { 
+            stdio: 'pipe',
+            encoding: 'utf8'
+        });
+        console.log('Database push result:', result);
+        res.json({ message: 'Database schema pushed successfully!', result });
     } catch (error) {
         console.error('Migration failed:', error);
-        res.status(500).json({ error: 'Migration failed', details: error.message });
+        res.status(500).json({ 
+            error: 'Migration failed', 
+            details: error.message,
+            stack: error.stack 
+        });
     }
 });
 app.use(
