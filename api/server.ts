@@ -1,4 +1,4 @@
-/// <reference path="./types/express-session.d.ts" />
+/// <reference path="../src/types/express-session.d.ts" />
 import path from "path";
 import express from "express";
 import session from "express-session";
@@ -72,10 +72,7 @@ if (process.env.NODE_ENV !== 'production') {
         format: winston.format.simple()
     }));
 }
-const VIEWS_DIR =
-    process.env.NODE_ENV === "production"
-        ? path.join(__dirname, "views")
-        : path.join(process.cwd(), "src", "views");
+const VIEWS_DIR = path.join(process.cwd(), "src", "views");
 app.set("view engine", "ejs");
 app.set("views", VIEWS_DIR);
 app.use(helmet({
