@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email — RouteToDev</title>
+    <link href="/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div style="position: fixed; top: var(--space-4); left: var(--space-4); z-index: 100;">
+        <a href="/" class="navbar-brand"
+            style="text-decoration: none; color: var(--primary-400); font-weight: 800; text-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);">
+            RouteToDev
+        </a>
+    </div>
+    <div
+        style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: var(--space-12) var(--space-4);">
+        <div style="max-width: 500px; width: 100%;">
+            <div class="text-center mb-8">
+                <h1 style="color: var(--white); font-weight: 800; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">Verify
+                    Your Email</h1>
+                <p style="color: var(--gray-200); margin-top: var(--space-2); font-weight: 500;">
+                    Complete your registration by verifying your email address
+                </p>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <% if (error) { %>
+                        <div class="alert alert-error mb-4">
+                            <%= error %>
+                        </div>
+                        <% } %>
+                            <% if (success) { %>
+                                <div class="alert alert-success mb-4">
+                                    <%= success %>
+                                </div>
+                                <div class="text-center">
+                                    <a href="/login" class="btn btn-primary">
+                                        Continue to Login
+                                    </a>
+                                </div>
+                                <% } else { %>
+                                    <div class="text-center">
+                                        <p style="color: var(--gray-300); margin-bottom: var(--space-4);">
+                                            Invalid or expired verification link.
+                                        </p>
+                                        <a href="/register" class="btn btn-primary">
+                                            Register Again
+                                        </a>
+                                    </div>
+                                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

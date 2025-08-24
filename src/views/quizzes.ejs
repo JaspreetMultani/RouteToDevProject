@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Quizzes — RouteToDev</title>
+    <link href="/styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="flex items-center gap-4">
+                <a href="/" class="navbar-brand" style="text-decoration: none; color: var(--gray-100);">
+                    RouteToDev
+                </a>
+                <h1 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-100);">
+                    My Quizzes
+                </h1>
+            </div>
+            <div class="navbar-nav">
+                <a href="/me">My Progress</a>
+                <form method="post" action="/logout" style="display:inline;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <button type="submit" class="btn btn-secondary">Log out</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+    <div class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-8);">
+        <div class="card mb-8">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--gray-100); margin: 0 0 0.5rem 0;">
+                            Accessible Quizzes
+                        </h2>
+                        <p style="color: var(--gray-400); margin: 0;">
+                            <% if (premium) { %>
+                                You are a Premium member. All quizzes are unlocked.
+                                <% } else { %>
+                                    These are the quizzes you've unlocked via purchases.
+                                    <% } %>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% if (quizzes.length===0) { %>
+            <div class="card">
+                <div class="card-body text-center">
+                    <p style="color: var(--gray-400); margin: 0 0 1rem 0;">No quizzes unlocked yet.</p>
+                    <a href="/" class="btn btn-primary">Browse Paths</a>
+                </div>
+            </div>
+            <% } else { %>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <% quizzes.forEach(q=> { %>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div>
+                                        <div style="color: var(--gray-400); font-size: 0.875rem;">
+                                            <%= q.pathTitle %> • <%= q.moduleTitle %>
+                                        </div>
+                                        <h3
+                                            style="font-size: 1.125rem; font-weight: 600; color: var(--gray-100); margin: 0;">
+                                            <%= q.title %>
+                                        </h3>
+                                    </div>
+                                    <div class="badge" style="background: var(--primary-600); color: white;">
+                                        <%= q.questionCount %> Questions
+                                    </div>
+                                </div>
+                                <% if (q.lastAttempt) { %>
+                                    <div class="flex items-center justify-between mb-4"
+                                        style="color: var(--gray-400); font-size: 0.875rem;">
+                                        <div>
+                                            Last score:
+                                            <span style="color: var(--gray-200); font-weight: 600;">
+                                                <%= q.lastAttempt.score %>%
+                                            </span>
+                                            • <%= new Date(q.lastAttempt.completedAt).toLocaleDateString() %>
+                                        </div>
+                                        <div class="badge"
+                                            style="background: <%= q.lastAttempt.score >= 80 ? 'var(--success-600)' : q.lastAttempt.score >= 60 ? 'var(--primary-600)' : 'var(--gray-600)' %>; color: white;">
+                                            <%= q.lastAttempt.correctAnswers %>/<%= q.lastAttempt.totalQuestions %>
+                                        </div>
+                                    </div>
+                                    <% } %>
+                                        <div class="flex gap-3">
+                                            <a href="/quiz/<%= q.moduleId %>" class="btn btn-secondary btn-sm">View</a>
+                                            <a href="/quiz/<%= q.moduleId %>/take"
+                                                class="btn btn-primary btn-sm">Retake</a>
+                                        </div>
+                            </div>
+                        </div>
+                        <% }) %>
+                </div>
+                <% } %>
+    </div>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= quiz.title %> — RouteToDev
+    </title>
+    <link href="/styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="flex items-center gap-4">
+                <a href="/" class="navbar-brand" style="text-decoration: none; color: var(--gray-100);">
+                    RouteToDev
+                </a>
+                <h1 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-100);">
+                    <%= quiz.title %>
+                </h1>
+            </div>
+            <div class="navbar-nav">
+                <a href="/p/<%= module.path.slug %>">Back to Path</a>
+                <a href="/me">My Progress</a>
+                <form method="post" action="/logout" style="display:inline;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <button type="submit" class="btn btn-secondary">Log out</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+    <div class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-8);">
+        <div class="card mb-8">
+            <div class="card-body">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--gray-100); margin: 0 0 0.5rem 0;">
+                            <%= quiz.title %>
+                        </h2>
+                        <p style="color: var(--gray-400); margin: 0;">
+                            <%= module.path.title %> • <%= module.title %>
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <div class="badge" style="background: var(--primary-600); color: white;">
+                            <%= quiz.questionCount %> Questions
+                        </div>
+                    </div>
+                </div>
+                <% if (quiz.description) { %>
+                    <p style="color: var(--gray-300); margin: 0;">
+                        <%= quiz.description %>
+                    </p>
+                    <% } %>
+            </div>
+        </div>
+        <% if (!hasAccess) { %>
+            <div class="card mb-8" style="border: 2px solid var(--primary-600);">
+                <div class="card-body">
+                    <div class="text-center">
+                        <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-100); margin: 0 0 1rem 0;">
+                            🔒 Quiz Locked
+                        </h3>
+                        <p style="color: var(--gray-400); margin: 0 0 2rem 0;">
+                            Purchase this quiz to test your knowledge and track your progress.
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div class="card"
+                                style="border: 2px solid var(--primary-600); background: var(--primary-900);">
+                                <div class="card-body text-center">
+                                    <div class="badge"
+                                        style="background: var(--primary-600); color: white; margin-bottom: 0.5rem;">
+                                        Best Value
+                                    </div>
+                                    <h4
+                                        style="font-size: 1.125rem; font-weight: 600; color: var(--gray-100); margin: 0 0 0.5rem 0;">
+                                        Unlock Path
+                                    </h4>
+                                    <div
+                                        style="font-size: 1.5rem; font-weight: 700; color: var(--primary-400); margin: 0 0 1rem 0;">
+                                        $5
+                                    </div>
+                                    <p style="color: var(--gray-400); font-size: 0.875rem; margin: 0 0 1rem 0;">
+                                        Access all quizzes in <%= module.path.title %>
+                                    </p>
+                                    <form method="post" action="/checkout/path">
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                                        <input type="hidden" name="pathId" value="<%= module.path.id %>" />
+                                        <button class="btn btn-primary" style="width: 100%;">
+                                            Unlock Path
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="card" style="border: 1px solid var(--gray-600);">
+                                <div class="card-body text-center">
+                                    <h4
+                                        style="font-size: 1.125rem; font-weight: 600; color: var(--gray-100); margin: 0 0 0.5rem 0;">
+                                        Premium Membership
+                                    </h4>
+                                    <div
+                                        style="font-size: 1.5rem; font-weight: 700; color: var(--primary-400); margin: 0 0 1rem 0;">
+                                        $35
+                                    </div>
+                                    <p style="color: var(--gray-400); font-size: 0.875rem; margin: 0 0 1rem 0;">
+                                        Access all quizzes across all paths
+                                    </p>
+                                    <form method="post" action="/checkout/premium">
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                                        <button class="btn btn-secondary" style="width: 100%;">
+                                            Go Premium
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <p style="color: var(--gray-500); font-size: 0.875rem; margin: 0;">
+                            Premium members get unlimited access to all quizzes across all paths and future content.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <% } else { %>
+                <div class="card mb-8" style="border: 2px solid var(--success-600); background: var(--success-900);">
+                    <div class="card-body">
+                        <div class="text-center">
+                            <h3
+                                style="font-size: 1.25rem; font-weight: 600; color: var(--gray-100); margin: 0 0 1rem 0;">
+                                ✅ Quiz Unlocked
+                            </h3>
+                            <p style="color: var(--gray-400); margin: 0 0 2rem 0;">
+                                You have access to this quiz. Ready to test your knowledge?
+                            </p>
+                            <a href="/quiz/<%= module.id %>/take" class="btn btn-primary">
+                                Start Quiz
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+                    <% if (attempts.length> 0) { %>
+                        <div class="card">
+                            <div class="card-body">
+                                <h3
+                                    style="font-size: 1.25rem; font-weight: 600; color: var(--gray-100); margin: 0 0 1rem 0;">
+                                    Previous Attempts
+                                </h3>
+                                <div class="space-y-3">
+                                    <% attempts.forEach(attempt=> { %>
+                                        <div class="flex items-center justify-between p-3"
+                                            style="background: var(--gray-800); border-radius: var(--radius-md);">
+                                            <div>
+                                                <div style="color: var(--gray-300); font-weight: 500;">
+                                                    <%= attempt.correctAnswers %>/<%= attempt.totalQuestions %> correct
+                                                </div>
+                                                <div style="color: var(--gray-500); font-size: 0.875rem;">
+                                                    <%= new Date(attempt.completedAt).toLocaleDateString() %>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="badge"
+                                                    style="background: <%= attempt.score >= 80 ? 'var(--success-600)' : attempt.score >= 60 ? 'var(--primary-600)' : 'var(--gray-600)' %>; color: white;">
+                                                    <%= attempt.score %>%
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <% }) %>
+                                </div>
+                            </div>
+                        </div>
+                        <% } %>
+    </div>
+</body>
+</html>

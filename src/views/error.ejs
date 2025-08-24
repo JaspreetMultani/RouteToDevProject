@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error — RouteToDev</title>
+    <link href="/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div style="position: fixed; top: var(--space-4); left: var(--space-4); z-index: 100;">
+        <a href="/" class="navbar-brand"
+            style="text-decoration: none; color: var(--primary-400); font-weight: 800; text-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);">
+            RouteToDev
+        </a>
+    </div>
+    <div
+        style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: var(--space-12) var(--space-4);">
+        <div style="max-width: 500px; width: 100%;">
+            <div class="text-center mb-8">
+                <h1 style="color: var(--white); font-weight: 800; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">Oops!</h1>
+                <p style="color: var(--gray-200); margin-top: var(--space-2); font-weight: 500;">
+                    Something went wrong
+                </p>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-center">
+                        <h2 style="color: var(--gray-100); font-size: 1.25rem; margin-bottom: var(--space-4);">
+                            <%= error.message %>
+                        </h2>
+                        <% if (isDev && error.stack) { %>
+                            <div
+                                style="background: var(--gray-800); padding: var(--space-4); border-radius: var(--radius-md); margin-bottom: var(--space-4);">
+                                <pre
+                                    style="color: var(--gray-300); font-size: 0.75rem; overflow-x: auto; white-space: pre-wrap;">
+<%= error.stack %>
+                                </pre>
+                            </div>
+                            <% } %>
+                                <a href="/" class="btn btn-primary">
+                                    Go Home
+                                </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

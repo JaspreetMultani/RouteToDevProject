@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Results — RouteToDev</title>
+    <link href="/styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="flex items-center gap-4">
+                <a href="/" class="navbar-brand" style="text-decoration: none; color: var(--gray-100);">
+                    RouteToDev
+                </a>
+                <h1 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-100);">
+                    Quiz Results
+                </h1>
+            </div>
+            <div class="navbar-nav">
+                <a href="/quiz/<%= module.id %>">Back to Quiz</a>
+                <a href="/p/<%= module.path.slug %>">Back to Path</a>
+                <form method="post" action="/logout" style="display:inline;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <button type="submit" class="btn btn-secondary">Log out</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+    <div class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-8);">
+        <div class="card mb-8">
+            <div class="card-body text-center">
+                <h2 style="font-size: 2rem; font-weight: 700; color: var(--gray-100); margin: 0 0 1rem 0;">
+                    Quiz Complete!
+                </h2>
+                <div class="mb-6">
+                    <div
+                        style="font-size: 3rem; font-weight: 700; color: <%= score >= 80 ? 'var(--success-400)' : score >= 60 ? 'var(--primary-400)' : 'var(--gray-400)' %>; margin: 0 0 0.5rem 0;">
+                        <%= score %>%
+                    </div>
+                    <div style="color: var(--gray-400); font-size: 1.125rem; margin: 0 0 1rem 0;">
+                        <%= correctAnswers %> out of <%= totalQuestions %> questions correct
+                    </div>
+                    <div class="badge"
+                        style="background: <%= score >= 80 ? 'var(--success-600)' : score >= 60 ? 'var(--primary-600)' : 'var(--gray-600)' %>; color: white; font-size: 1rem; padding: 0.5rem 1rem;">
+                        <% if (score>= 80) { %>
+                            🎉 Excellent! Great job!
+                            <% } else if (score>= 60) { %>
+                                👍 Good work! Keep learning!
+                                <% } else { %>
+                                    📚 Keep studying! You'll get there!
+                                    <% } %>
+                    </div>
+                </div>
+                <div class="flex gap-4 justify-center">
+                    <a href="/quiz/<%= module.id %>" class="btn btn-secondary">
+                        View Quiz Details
+                    </a>
+                    <a href="/p/<%= module.path.slug %>" class="btn btn-primary">
+                        Continue Learning
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h3 style="font-size: 1.5rem; font-weight: 600; color: var(--gray-100); margin: 0 0 2rem 0;">
+                    Question Review
+                </h3>
+                <div class="space-y-6">
+                    <% quiz.questions.forEach((question, index)=> {
+                        const result = gradedAnswers[question.id];
+                        const isCorrect = result.correct;
+                        %>
+                        <div class="card"
+                            style="border: 2px solid <%= isCorrect ? 'var(--success-600)' : 'var(--gray-600)' %>; background: <%= isCorrect ? 'var(--success-900)' : 'var(--gray-900)' %>;">
+                            <div class="card-body">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="badge"
+                                        style="background: <%= isCorrect ? 'var(--success-600)' : 'var(--gray-600)' %>; color: white;">
+                                        Question <%= index + 1 %>
+                                    </div>
+                                    <div class="badge"
+                                        style="background: <%= isCorrect ? 'var(--success-600)' : 'var(--gray-600)' %>; color: white;">
+                                        <%= isCorrect ? '✅ Correct' : '❌ Incorrect' %>
+                                    </div>
+                                </div>
+                                <h4
+                                    style="font-size: 1.125rem; font-weight: 600; color: var(--gray-100); margin: 0 0 1rem 0;">
+                                    <%= question.questionText %>
+                                </h4>
+                                <div class="space-y-3">
+                                    <div>
+                                        <div
+                                            style="color: var(--gray-400); font-size: 0.875rem; margin-bottom: 0.25rem;">
+                                            Your Answer:
+                                        </div>
+                                        <div
+                                            style="color: <%= isCorrect ? 'var(--success-400)' : 'var(--gray-300)' %>; font-weight: 500;">
+                                            <%= result.userAnswer || 'No answer provided' %>
+                                        </div>
+                                    </div>
+                                    <% if (!isCorrect) { %>
+                                        <div>
+                                            <div
+                                                style="color: var(--gray-400); font-size: 0.875rem; margin-bottom: 0.25rem;">
+                                                Correct Answer:
+                                            </div>
+                                            <div style="color: var(--success-400); font-weight: 500;">
+                                                <%= result.correctAnswers.join(', ') %>
+                                            </div>
+                                        </div>
+                                    <% } %>
+                                    <% if (question.explanation) { %>
+                                        <div>
+                                            <div style="color: var(--gray-400); font-size: 0.875rem; margin-bottom: 0.25rem;">
+                                                Explanation:
+                                            </div>
+                                            <div style="color: var(--gray-300); font-style: italic;">
+                                                <%= question.explanation %>
+                                            </div>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

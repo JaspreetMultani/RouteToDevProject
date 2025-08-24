@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Progress — RouteToDev</title>
+    <link href="/styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="flex items-center gap-4">
+                <a href="/" class="navbar-brand" style="text-decoration: none; color: var(--gray-100);">
+                    RouteToDev
+                </a>
+                <h1 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-100);">My Progress</h1>
+            </div>
+            <div class="navbar-nav">
+                <form method="post" action="/logout" style="display:inline;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <button type="submit" class="btn btn-secondary">Log out</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+    <div class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-8);">
+        <div class="mb-8">
+            <h1
+                style="font-size: 2rem; font-weight: 700; color: var(--white); margin-bottom: var(--space-2); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">
+                Welcome back!</h1>
+            <p style="font-size: 1.125rem; color: var(--gray-200); font-weight: 500;">Track your learning progress and
+                achievements</p>
+        </div>
+        <div class="card mb-8">
+            <div class="card-body">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--white); margin: 0;">Weekly Goal
+                    </h2>
+                    <span class="badge">
+                        <%= weeklyGoal.done %>/<%= weeklyGoal.target %> modules
+                    </span>
+                </div>
+                <div class="progress progress-lg">
+                    <div class="progress-bar"
+                        style="width: <%= Math.min(100, (weeklyGoal.done / weeklyGoal.target) * 100) %>%"></div>
+                </div>
+                <p
+                    style="font-size: 0.875rem; color: var(--gray-200); margin-top: var(--space-2); margin-bottom: 0; font-weight: 500;">
+                    Week <%= weeklyGoal.weekNumber %> • <%= weeklyGoal.done %> modules completed
+                </p>
+            </div>
+        </div>
+        <div class="grid grid-cols-3">
+            <% paths.forEach(p=> { %>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="flex items-start justify-between mb-4">
+                            <div style="flex: 1;">
+                                <h3
+                                    style="font-size: 1.125rem; font-weight: 600; color: var(--white); margin-bottom: var(--space-2);">
+                                    <a href="/p/<%= p.slug %>"
+                                        style="color: var(--white); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);">
+                                        <%= p.title %>
+                                    </a>
+                                </h3>
+                                <p
+                                    style="font-size: 0.875rem; color: var(--gray-200); margin-bottom: var(--space-3); font-weight: 500;">
+                                    <%= p.description || '' %>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-sm"
+                            style="color: var(--gray-500); margin-bottom: var(--space-4);">
+                            <span class="flex items-center gap-1">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
+                                </svg>
+                                <%= p.modulesCount %> modules
+                            </span>
+                            <% if (p.progress.totalMinutes> 0) { %>
+                                <span class="flex items-center gap-1">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    ~<%= p.progress.totalMinutes %> min
+                                </span>
+                                <% } %>
+                        </div>
+                        <div class="mb-4">
+                            <div class="flex items-center justify-between text-sm mb-2">
+                                <span style="color: var(--gray-600);">Progress</span>
+                                <span style="font-weight: 500; color: var(--gray-900);">
+                                    <%= p.progress.percent %>%
+                                </span>
+                            </div>
+                            <div class="progress progress-sm">
+                                <div class="progress-bar" style="width: <%= p.progress.percent %>%"></div>
+                            </div>
+                            <div class="flex items-center justify-between text-xs"
+                                style="color: var(--gray-500); margin-top: var(--space-1);">
+                                <span>
+                                    <%= p.progress.done %>/<%= p.progress.total %> completed
+                                </span>
+                                <% if (p.progress.remainingMinutes> 0) { %>
+                                    <span>~<%= p.progress.remainingMinutes %> min left</span>
+                                    <% } %>
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <% if (p.nextUrl) { %>
+                                <a href="<%= p.nextUrl %>" target="_blank" rel="noopener"
+                                    class="btn btn-primary btn-sm">
+                                    Continue →
+                                </a>
+                                <% } else { %>
+                                    <a href="/p/<%= p.slug %>" class="btn btn-primary btn-sm">
+                                        View Path →
+                                    </a>
+                                    <% } %>
+                        </div>
+                    </div>
+                </div>
+                <% }) %>
+        </div>
+        <% if (paths.length===0) { %>
+            <div class="text-center" style="padding: var(--space-12) 0;">
+                <div style="color: var(--gray-400); margin-bottom: var(--space-4);">
+                    <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        style="margin: 0 auto;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
+                    </svg>
+                </div>
+                <h3
+                    style="font-size: 1.125rem; font-weight: 500; color: var(--gray-900); margin-bottom: var(--space-2);">
+                    No paths found</h3>
+                <p style="color: var(--gray-600); margin-bottom: var(--space-4);">Start your learning journey by
+                    exploring our paths</p>
+                <a href="/" class="btn btn-primary">Browse Paths</a>
+            </div>
+            <% } %>
+    </div>
+</body>
+</html>

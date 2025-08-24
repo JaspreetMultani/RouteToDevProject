@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — RouteToDev</title>
+    <link href="/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div style="position: fixed; top: var(--space-4); left: var(--space-4); z-index: 100;">
+        <a href="/" class="navbar-brand"
+            style="text-decoration: none; color: var(--primary-400); font-weight: 800; text-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);">
+            RouteToDev
+        </a>
+    </div>
+    <div style="position: fixed; top: var(--space-4); right: var(--space-4); z-index: 100;">
+        <a href="/pricing" class="btn btn-secondary"
+            style="background: var(--success-600); border-color: var(--success-600); font-size: 0.875rem; padding: 0.5rem 1rem;">🚀
+            Premium</a>
+    </div>
+    <div
+        style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: var(--space-12) var(--space-4);">
+        <div style="max-width: 400px; width: 100%;">
+            <div class="text-center mb-8">
+                <h1 style="color: var(--white); font-weight: 800; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">Welcome
+                    back</h1>
+                <p style="color: var(--gray-200); margin-top: var(--space-2); font-weight: 500;">
+                    Sign in to continue your learning journey
+                </p>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <% if (message) { %>
+                        <div class="alert alert-success mb-4">
+                            <%= message %>
+                        </div>
+                        <% } %>
+                            <% if (error) { %>
+                                <div class="alert alert-error mb-4">
+                                    <%= error %>
+                                </div>
+                                <% } %>
+                                    <form method="post">
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                                        <div class="form-group">
+                                            <label for="email" class="form-label">Email address</label>
+                                            <input type="email" name="email" id="email" required class="form-input"
+                                                placeholder="Enter your email">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="password" class="form-label">Password</label>
+                                            <input type="password" name="password" id="password" required
+                                                class="form-input" placeholder="Enter your password">
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <button type="submit" class="btn btn-primary w-full">
+                                                Sign in
+                                            </button>
+                                        </div>
+                                    </form>
+                                    <div class="text-center" style="margin-top: var(--space-6);">
+                                        <p style="color: var(--gray-200); font-size: 0.875rem; font-weight: 500;">
+                                            Don't have an account?
+                                            <a href="/register"
+                                                style="font-weight: 600; color: var(--primary-300);">Sign up</a>
+                                        </p>
+                                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

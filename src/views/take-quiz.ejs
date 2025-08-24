@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taking <%= quiz.title %> — RouteToDev</title>
+    <link href="/styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="flex items-center gap-4">
+                <a href="/" class="navbar-brand" style="text-decoration: none; color: var(--gray-100);">
+                    RouteToDev
+                </a>
+                <h1 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-100);">
+                    <%= quiz.title %>
+                </h1>
+            </div>
+            <div class="navbar-nav">
+                <a href="/quiz/<%= module.id %>">Back to Quiz</a>
+                <a href="/me">My Progress</a>
+                <form method="post" action="/logout" style="display:inline;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <button type="submit" class="btn btn-secondary">Log out</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+    <div class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-8);">
+        <div class="card mb-8">
+            <div class="card-body">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--gray-100); margin: 0 0 0.5rem 0;">
+                            <%= quiz.title %>
+                        </h2>
+                        <p style="color: var(--gray-400); margin: 0;">
+                            <%= module.path.title %> • <%= module.title %>
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <div class="badge" style="background: var(--primary-600); color: white;">
+                            <%= quiz.questionCount %> Questions
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form method="post" action="/quiz/<%= module.id %>/submit">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <% quiz.questions.forEach((question, index)=> { %>
+                <div class="card mb-6">
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <div class="badge"
+                                style="background: var(--gray-600); color: white; margin-bottom: 0.5rem;">
+                                Question <%= index + 1 %> of <%= quiz.questionCount %>
+                            </div>
+                            <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-100); margin: 0;">
+                                <%= question.questionText %>
+                            </h3>
+                        </div>
+                        <div class="space-y-3">
+                            <% JSON.parse(question.options).forEach((option, optionIndex)=> { %>
+                                <label class="flex items-center p-3 cursor-pointer"
+                                    style="background: var(--gray-800); border: 2px solid var(--gray-700); border-radius: var(--radius-md); transition: all 0.2s;">
+                                    <input type="radio" name="answer_<%= question.id %>" value="<%= option %>"
+                                        class="mr-3"
+                                        style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary-500);" />
+                                    <span style="color: var(--gray-300); font-weight: 500;">
+                                        <%= option %>
+                                    </span>
+                                </label>
+                                <% }) %>
+                        </div>
+                    </div>
+                </div>
+                <% }) %>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="text-center">
+                                <p style="color: var(--gray-400); margin: 0 0 1.5rem 0;">
+                                    Review your answers before submitting. You can't change them after submission.
+                                </p>
+                                <button type="submit" class="btn btn-primary"
+                                    style="font-size: 1.125rem; padding: 0.75rem 2rem;">
+                                    Submit Quiz
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+        </form>
+    </div>
+    <script>
+        // Add hover effects to radio button labels
+        document.querySelectorAll('label').forEach(label => {
+            label.addEventListener('mouseenter', () => {
+                label.style.borderColor = 'var(--primary-500)';
+                label.style.background = 'var(--gray-700)';
+            });
+            label.addEventListener('mouseleave', () => {
+                label.style.borderColor = 'var(--gray-700)';
+                label.style.background = 'var(--gray-800)';
+            });
+        });
+        // Add click effect to radio buttons
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                // Remove selected styling from all labels in this question
+                const questionCard = radio.closest('.card');
+                questionCard.querySelectorAll('label').forEach(label => {
+                    label.style.borderColor = 'var(--gray-700)';
+                    label.style.background = 'var(--gray-800)';
+                });
+                // Add selected styling to the clicked label
+                const selectedLabel = radio.closest('label');
+                selectedLabel.style.borderColor = 'var(--primary-500)';
+                selectedLabel.style.background = 'var(--primary-900)';
+            });
+        });
+    </script>
+</body>
+</html>

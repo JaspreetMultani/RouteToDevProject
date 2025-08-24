@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= p.title %> — RouteToDev
+    </title>
+    <link href="/styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="flex items-center gap-4">
+                <a href="/" class="navbar-brand" style="text-decoration: none; color: var(--gray-100);">
+                    RouteToDev
+                </a>
+                <h1 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-100);">
+                    <%= p.title %>
+                </h1>
+            </div>
+            <div class="navbar-nav">
+                <% if (userEmail) { %>
+                    <a href="/me">My Progress</a>
+                    <a href="/quizzes">My Quizzes</a>
+                    <a href="/pricing" class="btn btn-primary"
+                        style="background: var(--success-600); border-color: var(--success-600);">🚀 Become Premium</a>
+                    <form method="post" action="/logout" style="display:inline;">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                        <button type="submit" class="btn btn-secondary">Log out</button>
+                    </form>
+                    <% } else { %>
+                        <a href="/login">Log in</a>
+                        <a href="/register" class="btn btn-primary">Sign up</a>
+                        <a href="/pricing" class="btn btn-secondary"
+                            style="background: var(--success-600); border-color: var(--success-600);">🚀 Premium
+                            Access</a>
+                        <% } %>
+            </div>
+        </div>
+    </nav>
+    <div class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-8);">
+        <div class="card mb-8">
+            <div class="card-body">
+                <div class="flex items-start justify-between mb-6">
+                    <div style="flex: 1;">
+                        <h1
+                            style="font-size: 2rem; font-weight: 700; color: var(--gray-100); margin-bottom: var(--space-2);">
+                            <%= p.title %>
+                        </h1>
+                        <p style="font-size: 1.125rem; color: var(--gray-300); margin-bottom: var(--space-4);">
+                            <%= p.description || '' %>
+                        </p>
+                        <div class="flex items-center gap-6" style="font-size: 0.875rem; color: var(--gray-400);">
+                            <span class="flex items-center gap-1">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
+                                </svg>
+                                <%= p.modules.length %> modules
+                            </span>
+                        </div>
+                    </div>
+                    <% if (nextResource) { %>
+                        <a href="<%= nextResource.url %>" target="_blank" rel="noopener" class="btn btn-primary">
+                            Continue Learning →
+                        </a>
+                        <% } %>
+                </div>
+                <div class="mb-6">
+                    <div class="flex items-center justify-between text-sm mb-2">
+                        <span style="color: var(--gray-300);">Overall Progress</span>
+                        <span style="font-weight: 500; color: var(--gray-100);">
+                            <%= overall.percent %>%
+                        </span>
+                    </div>
+                    <div class="progress progress-lg">
+                        <div class="progress-bar" style="width: <%= overall.percent %>%"></div>
+                    </div>
+                    <div class="flex items-center justify-between text-xs"
+                        style="color: var(--gray-400); margin-top: var(--space-2);">
+                        <span>
+                            <%= overall.done %>/<%= overall.total %> resources completed
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-6 p-4"
+                    style="background: var(--primary-900); border-radius: var(--radius-lg); border: 2px solid var(--primary-600);">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <span style="font-size: 1.5rem;">🧠</span>
+                            <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-100); margin: 0;">
+                                Test Your Knowledge
+                            </h3>
+                        </div>
+                        <div class="badge" style="background: var(--primary-600); color: white;">
+                            $5
+                        </div>
+                    </div>
+                    <p style="color: var(--gray-300); font-size: 0.875rem; margin: 0 0 1rem 0;">
+                        Unlock all quizzes in this path to test your understanding of all modules.
+                    </p>
+                    <% if (userEmail) { %>
+                        <a href="/quiz/<%= p.modules[0].id %>" class="btn btn-primary">
+                            Unlock All Quizzes for $5
+                        </a>
+                        <% } else { %>
+                            <a href="/login?next=/p/<%= p.slug %>" class="btn btn-secondary">
+                                Log in to unlock quizzes
+                            </a>
+                            <% } %>
+                </div>
+            </div>
+        </div>
+        <div class="steps">
+            <% p.modules.forEach((m, index)=> { %>
+                <div
+                    class="step <%= moduleProgressMap[m.id].percent === 100 ? 'completed' : (moduleProgressMap[m.id].done > 0 ? 'current' : '') %>">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="flex items-center justify-between mb-3">
+                                <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-100); margin: 0;">
+                                    <%= m.orderIndex %>. <%= m.title %>
+                                </h2>
+                                <span class="badge">
+                                    <%= moduleProgressMap[m.id].done %>/<%= moduleProgressMap[m.id].total %>
+                                </span>
+                            </div>
+                            <% if (m.description) { %>
+                                <p style="color: var(--gray-300); margin-bottom: var(--space-4);">
+                                    <%= m.description %>
+                                </p>
+                                <% } %>
+                                    <div class="mb-4">
+                                        <div class="progress progress-sm">
+                                            <div class="progress-bar"
+                                                style="width: <%= moduleProgressMap[m.id].percent %>%"></div>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+                                        <% m.resources.forEach(r=> {
+                                            const isDone = doneMap[r.id] === true;
+                                            %>
+                                            <div class="flex items-center justify-between p-3"
+                                                style="background: rgba(31, 41, 55, 0.5); border-radius: var(--radius-lg); <%= isDone ? 'opacity: 0.6;' : '' %>">
+                                                <div class="flex items-center gap-3">
+                                                    <div
+                                                        style="width: 8px; height: 8px; border-radius: 50%; <%= isDone ? 'background: var(--success-500);' : 'background: var(--gray-300);' %>">
+                                                    </div>
+                                                    <div>
+                                                        <a href="<%= r.url %>" target="_blank" rel="noopener"
+                                                            style="color: var(--gray-100); <%= isDone ? 'text-decoration: line-through;' : '' %>">
+                                                            <%= r.title %>
+                                                        </a>
+                                                        <% if (r.estMinutes) { %>
+                                                            <span
+                                                                style="font-size: 0.75rem; color: var(--gray-400); margin-left: var(--space-2);"></span>
+                                                            <% } %>
+                                                    </div>
+                                                </div>
+                                                <% if (userEmail) { %>
+                                                    <form method="post" action="/progress">
+                                                        <input type="hidden" name="resourceId" value="<%= r.id %>" />
+                                                        <input type="hidden" name="action"
+                                                            value="<%= isDone ? 'undo' : 'done' %>" />
+                                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                                                        <input type="hidden" name="redirectTo"
+                                                            value="/p/<%= p.slug %>" />
+                                                        <button type="submit"
+                                                            class="<%= isDone ? 'btn btn-secondary' : 'btn btn-primary' %> btn-sm">
+                                                            <%= isDone ? '✓ Undo' : 'Mark Done' %>
+                                                        </button>
+                                                    </form>
+                                                    <% } else { %>
+                                                        <a href="/login?next=/p/<%= p.slug %>"
+                                                            style="font-size: 0.875rem; color: var(--primary-600);">
+                                                            Log in to track
+                                                        </a>
+                                                        <% } %>
+                                            </div>
+                                            <% }) %>
+                                    </div>
+                                    <div class="mt-4 flex justify-end">
+                                        <% if (userEmail) { %>
+                                            <a href="/quiz/<%= m.id %>" class="btn btn-primary btn-sm">
+                                                Take Quiz
+                                            </a>
+                                            <% } else { %>
+                                                <a href="/login?next=/quiz/<%= m.id %>"
+                                                    class="btn btn-secondary btn-sm">
+                                                    Log in to take quiz
+                                                </a>
+                                                <% } %>
+                                    </div>
+                        </div>
+                    </div>
+                </div>
+                <% }) %>
+        </div>
+    </div>
+</body>
+</html>

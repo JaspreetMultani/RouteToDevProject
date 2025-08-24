@@ -1,0 +1,190 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ResourceType {
+  ARTICLE
+  VIDEO
+  DOC
+  EXERCISE
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  DONE
+}
+
+enum Role {
+  LEARNER
+  ADMIN
+}
+
+enum QuizType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  CODE_REVIEW
+}
+
+enum PurchaseType {
+  INDIVIDUAL_QUIZ
+  MODULE_BUNDLE
+  PATH_BUNDLE
+  PREMIUM_MEMBERSHIP
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  email        String     @unique
+  passwordHash String
+  name         String?
+  role         Role       @default(LEARNER)
+  isPremium    Boolean    @default(false)
+  premiumPurchasedAt DateTime?
+  emailVerified Boolean   @default(false)
+  emailVerificationToken String?
+  emailVerificationExpires DateTime?
+  createdAt    DateTime   @default(now())
+  progresses   Progress[]
+  accounts     Account[]
+  quizPurchases QuizPurchase[]
+  quizAttempts QuizAttempt[]
+}
+
+model Path {
+  id          Int      @id @default(autoincrement())
+  title       String
+  slug        String   @unique
+  description String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  modules     Module[]
+  quizPurchases QuizPurchase[]
+}
+
+model Module {
+  id          Int        @id @default(autoincrement())
+  pathId      Int
+  title       String
+  orderIndex  Int        @default(0)
+  description String?
+  path        Path       @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  resources   Resource[]
+  quiz        Quiz?
+  quizPurchases QuizPurchase[]
+
+  @@index([pathId, orderIndex])
+}
+
+model Resource {
+  id           Int          @id @default(autoincrement())
+  moduleId     Int
+  title        String
+  url          String
+  type         ResourceType @default(ARTICLE)
+  estMinutes   Int?
+  isFree       Boolean      @default(true)
+  sourceDomain String?
+  module       Module       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progresses   Progress[]
+}
+
+model Progress {
+  id         Int            @id @default(autoincrement())
+  userId     Int
+  resourceId Int
+  status     ProgressStatus @default(NOT_STARTED)
+  lastSeenAt DateTime       @default(now())
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resource   Resource       @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resourceId])
+  @@index([userId, status])
+}
+
+model Account {
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  provider          String
+  providerAccountId String
+  createdAt         DateTime @default(now())
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Quiz {
+  id          Int      @id @default(autoincrement())
+  moduleId    Int
+  title       String
+  description String?
+  difficulty  String   @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
+  questionCount Int    @default(5)
+  individualPrice Decimal @default(0.50)
+  module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  questions   Question[]
+  purchases   QuizPurchase[]
+  attempts    QuizAttempt[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([moduleId])
+}
+
+model Question {
+  id          Int      @id @default(autoincrement())
+  quizId      Int
+  questionText String
+  type        QuizType @default(MULTIPLE_CHOICE)
+  options     String   // JSON array of options
+  correctAnswer String // JSON array of correct answers
+  explanation String?
+  orderIndex  Int      @default(0)
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@index([quizId, orderIndex])
+}
+
+model QuizPurchase {
+  id          Int          @id @default(autoincrement())
+  userId      Int
+  quizId      Int?
+  moduleId    Int?
+  pathId      Int?
+  purchaseType PurchaseType
+  amount      Decimal
+  stripePaymentId String?
+  isActive    Boolean      @default(true)
+  expiresAt   DateTime?
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz        Quiz?        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  module      Module?      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  path        Path?        @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  createdAt   DateTime     @default(now())
+
+  @@index([userId, isActive])
+  @@index([userId, purchaseType])
+}
+
+model QuizAttempt {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  quizId      Int
+  score       Int      // Percentage score (0-100)
+  totalQuestions Int
+  correctAnswers Int
+  answers     String   // JSON object of user answers
+  completedAt DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@index([userId, quizId])
+  @@index([userId, completedAt])
+}

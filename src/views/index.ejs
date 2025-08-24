@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RouteToDev</title>
+    <link href="/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="navbar-brand">RouteToDev</div>
+            <div class="navbar-nav">
+                <% if (userEmail) { %>
+                    <a href="/me">My Progress</a>
+                    <a href="/quizzes">My Quizzes</a>
+                    <a href="/pricing" class="btn btn-primary"
+                        style="background: var(--success-600); border-color: var(--success-600);">🚀 Become Premium</a>
+                    <form method="post" action="/logout" style="display:inline;">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                        <button type="submit" class="btn btn-secondary">Log out</button>
+                    </form>
+                    <% } else { %>
+                        <a href="/login">Log in</a>
+                        <a href="/register" class="btn btn-primary">Sign up</a>
+                        <a href="/pricing" class="btn btn-secondary"
+                            style="background: var(--success-600); border-color: var(--success-600);">🚀 Premium
+                            Access</a>
+                        <% } %>
+            </div>
+        </div>
+    </nav>
+    <section class="hero">
+        <div class="container">
+            <h1>Master Software Development</h1>
+            <p>Structured learning paths to help you become a better developer. Track your progress, build real skills,
+                and advance your career.</p>
+            <div class="flex gap-4 justify-center">
+                <% if (userEmail) { %>
+                    <a href="/me" class="btn btn-primary btn-lg"
+                        style="background: var(--white); color: var(--primary-600);">
+                        My Progress
+                    </a>
+                    <% } else { %>
+                        <a href="/register" class="btn btn-primary btn-lg"
+                            style="background: var(--white); color: var(--primary-600);">
+                            Start Learning
+                        </a>
+                        <a href="/login" class="btn btn-secondary btn-lg"
+                            style="background: transparent; border: 2px solid var(--white); color: var(--white);">
+                            Sign In
+                        </a>
+                        <% } %>
+            </div>
+        </div>
+    </section>
+    <section id="paths" class="container" style="padding-top: var(--space-16); padding-bottom: var(--space-16);">
+        <div class="text-center mb-12">
+            <h2 style="color: var(--white); font-weight: 800; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">Learning Paths
+            </h2>
+            <p style="font-size: 1.125rem; color: var(--gray-200); max-width: 600px; margin: 0 auto; font-weight: 500;">
+                Choose your journey. Each path is carefully curated to take you from beginner to confident developer.
+            </p>
+        </div>
+        <div class="grid grid-cols-3">
+            <% paths.forEach(p=> { %>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="flex items-start justify-between mb-4">
+                            <div style="flex: 1;">
+                                <h3 style="margin-bottom: var(--space-2);">
+                                    <a href="/p/<%= p.slug %>"
+                                        style="color: var(--white); font-size: 1.25rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);">
+                                        <%= p.title %>
+                                    </a>
+                                </h3>
+                                <p
+                                    style="color: var(--gray-200); font-size: 0.875rem; margin-bottom: var(--space-3); font-weight: 500;">
+                                    <%= p.description || '' %>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-sm"
+                            style="color: var(--gray-400); margin-bottom: var(--space-4);">
+                            <span class="flex items-center gap-1">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
+                                </svg>
+                                <%= p.modulesCount %> modules
+                            </span>
+                        </div>
+                        <% if (userEmail) { %>
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between text-sm mb-2">
+                                    <span style="color: var(--gray-300);">Progress</span>
+                                    <span style="font-weight: 500; color: var(--gray-100);">
+                                        <%= p.progress.percent %>%
+                                    </span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: <%= p.progress.percent %>%"></div>
+                                </div>
+                                <div class="flex items-center justify-between text-xs"
+                                    style="color: var(--gray-400); margin-top: var(--space-1);">
+                                    <span>
+                                        <%= p.progress.done %>/<%= p.progress.total %> completed
+                                    </span>
+                                </div>
+                            </div>
+                            <% } %>
+                                <div class="flex justify-end">
+                                    <% if (userEmail && p.nextUrl) { %>
+                                        <a href="<%= p.nextUrl %>" target="_blank" rel="noopener"
+                                            class="btn btn-primary btn-sm">
+                                            Continue →
+                                        </a>
+                                        <% } else { %>
+                                            <a href="/p/<%= p.slug %>" class="btn btn-primary btn-sm">
+                                                View Path →
+                                            </a>
+                                            <% } %>
+                                </div>
+                    </div>
+                </div>
+                <% }) %>
+        </div>
+    </section>
+    <footer
+        style="background: var(--gray-900); color: var(--white); padding: var(--space-12) 0; margin-top: var(--space-16);">
+        <div class="container text-center">
+            <p style="color: var(--gray-400);">&copy; 2025 RouteToDev. Built for Aspiring Developers.</p>
+        </div>
+    </footer>
+</body>
+</html>
