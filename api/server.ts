@@ -46,6 +46,17 @@ validateEnvironment();
 const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
+
+// Add error handling for uncaught exceptions
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    logger.error('Uncaught Exception:', error);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
 const SESSION_SECRET = process.env.SESSION_SECRET || "dev-secret-change-me";
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || "";
 const STRIPE_PRICE_PATH_USD = process.env.STRIPE_PRICE_PATH_USD || "";
@@ -160,6 +171,23 @@ app.post("/stripe/webhook", express.raw({ type: "application/json" }), async (re
 app.use(express.static(path.join(process.cwd(), "public")));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// Add a simple test route
+app.get('/test', (req, res) => {
+    res.json({ message: 'Server is working!', timestamp: new Date().toISOString() });
+});
+
+// Add migration route (remove this after migrations are done)
+app.get('/migrate', async (req, res) => {
+    try {
+        const { execSync } = require('child_process');
+        execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+        res.json({ message: 'Migrations completed successfully!' });
+    } catch (error) {
+        console.error('Migration failed:', error);
+        res.status(500).json({ error: 'Migration failed', details: error.message });
+    }
+});
 app.use(
     session({
         secret: SESSION_SECRET,
