@@ -63,15 +63,11 @@ const logger = winston.createLogger({
     ),
     defaultMeta: { service: 'routetodev' },
     transports: [
-        new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-        new winston.transports.File({ filename: 'logs/combined.log' }),
+        new winston.transports.Console({
+            format: winston.format.simple()
+        })
     ],
 });
-if (process.env.NODE_ENV !== 'production') {
-    logger.add(new winston.transports.Console({
-        format: winston.format.simple()
-    }));
-}
 const VIEWS_DIR = path.join(process.cwd(), "src", "views");
 app.set("view engine", "ejs");
 app.set("views", VIEWS_DIR);
