@@ -183,21 +183,110 @@ app.get('/migrate', async (req, res) => {
         // Test database connection first
         await prisma.$connect();
         console.log('Database connection successful');
-        
-        // Try to push the schema directly (alternative to migrations)
-        const { execSync } = require('child_process');
-        const result = execSync('npx prisma db push --schema=./prisma/schema.prisma', { 
-            stdio: 'pipe',
-            encoding: 'utf8'
-        });
-        console.log('Database push result:', result);
-        res.json({ message: 'Database schema pushed successfully!', result });
+
+        // Create tables using raw SQL
+        const createTablesSQL = `
+            CREATE TABLE IF NOT EXISTS "Path" (
+                "id" SERIAL PRIMARY KEY,
+                "title" TEXT NOT NULL,
+                "description" TEXT,
+                "slug" TEXT NOT NULL UNIQUE,
+                "orderIndex" INTEGER NOT NULL,
+                "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS "User" (
+                "id" SERIAL PRIMARY KEY,
+                "email" TEXT NOT NULL UNIQUE,
+                "passwordHash" TEXT NOT NULL,
+                "name" TEXT,
+                "role" TEXT NOT NULL DEFAULT 'USER',
+                "isPremium" BOOLEAN NOT NULL DEFAULT false,
+                "premiumPurchasedAt" TIMESTAMP(3),
+                "emailVerified" BOOLEAN NOT NULL DEFAULT false,
+                "emailVerificationToken" TEXT,
+                "emailVerificationExpires" TIMESTAMP(3),
+                "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS "Module" (
+                "id" SERIAL PRIMARY KEY,
+                "pathId" INTEGER NOT NULL,
+                "title" TEXT NOT NULL,
+                "description" TEXT,
+                "orderIndex" INTEGER NOT NULL,
+                "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY ("pathId") REFERENCES "Path"("id") ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS "Quiz" (
+                "id" SERIAL PRIMARY KEY,
+                "moduleId" INTEGER NOT NULL,
+                "title" TEXT NOT NULL,
+                "description" TEXT,
+                "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY ("moduleId") REFERENCES "Module"("id") ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS "Question" (
+                "id" SERIAL PRIMARY KEY,
+                "quizId" INTEGER NOT NULL,
+                "text" TEXT NOT NULL,
+                "options" TEXT[] NOT NULL,
+                "correctAnswer" INTEGER NOT NULL,
+                "explanation" TEXT,
+                "orderIndex" INTEGER NOT NULL,
+                "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY ("quizId") REFERENCES "Quiz"("id") ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS "QuizPurchase" (
+                "id" SERIAL PRIMARY KEY,
+                "userId" INTEGER NOT NULL,
+                "pathId" INTEGER,
+                "purchaseType" TEXT NOT NULL,
+                "amount" DECIMAL(10,2) NOT NULL,
+                "stripePaymentId" TEXT UNIQUE,
+                "isActive" BOOLEAN NOT NULL DEFAULT true,
+                "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+                FOREIGN KEY ("pathId") REFERENCES "Path"("id") ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS "QuizAttempt" (
+                "id" SERIAL PRIMARY KEY,
+                "userId" INTEGER NOT NULL,
+                "quizId" INTEGER NOT NULL,
+                "score" INTEGER NOT NULL,
+                "totalQuestions" INTEGER NOT NULL,
+                "answers" JSONB,
+                "completedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+                FOREIGN KEY ("quizId") REFERENCES "Quiz"("id") ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS "UserProgress" (
+                "id" SERIAL PRIMARY KEY,
+                "userId" INTEGER NOT NULL,
+                "moduleId" INTEGER NOT NULL,
+                "completed" BOOLEAN NOT NULL DEFAULT false,
+                "completedAt" TIMESTAMP(3),
+                "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+                FOREIGN KEY ("moduleId") REFERENCES "Module"("id") ON DELETE CASCADE,
+                UNIQUE("userId", "moduleId")
+            );
+        `;
+
+        await prisma.$executeRawUnsafe(createTablesSQL);
+        console.log('Tables created successfully');
+        res.json({ message: 'Database tables created successfully!' });
     } catch (error) {
         console.error('Migration failed:', error);
-        res.status(500).json({ 
-            error: 'Migration failed', 
+        res.status(500).json({
+            error: 'Migration failed',
             details: error.message,
-            stack: error.stack 
+            stack: error.stack
         });
     }
 });
