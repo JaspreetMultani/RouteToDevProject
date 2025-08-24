@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn src/server.ts",
-    "build": "tsc",
+    "build": "tsc && npx prisma generate",
     "start": "node dist/server.js",
     "docker:build": "docker build -t routetodev .",
     "docker:run": "docker-compose up",
