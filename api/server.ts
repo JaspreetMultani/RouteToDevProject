@@ -317,21 +317,20 @@ app.get('/migrate', async (req, res) => {
 app.get('/drop-tables', async (req, res) => {
     try {
         console.log('Dropping existing tables...');
-        
-        await prisma.$executeRawUnsafe(`
-            DROP TABLE IF EXISTS "UserProgress" CASCADE;
-            DROP TABLE IF EXISTS "QuizAttempt" CASCADE;
-            DROP TABLE IF EXISTS "QuizPurchase" CASCADE;
-            DROP TABLE IF EXISTS "Question" CASCADE;
-            DROP TABLE IF EXISTS "Quiz" CASCADE;
-            DROP TABLE IF EXISTS "Resource" CASCADE;
-            DROP TABLE IF EXISTS "Progress" CASCADE;
-            DROP TABLE IF EXISTS "Account" CASCADE;
-            DROP TABLE IF EXISTS "Module" CASCADE;
-            DROP TABLE IF EXISTS "Path" CASCADE;
-            DROP TABLE IF EXISTS "User" CASCADE;
-        `);
-        
+
+        // Drop tables one by one
+        await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "UserProgress" CASCADE`);
+        await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "QuizAttempt" CASCADE`);
+        await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "QuizPurchase" CASCADE`);
+        await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "Question" CASCADE`);
+        await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "Quiz" CASCADE`);
+        await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "Resource" CASCADE`);
+        await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "Progress" CASCADE`);
+        await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "Account" CASCADE`);
+        await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "Module" CASCADE`);
+        await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "Path" CASCADE`);
+        await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "User" CASCADE`);
+
         console.log('Tables dropped successfully');
         res.json({ message: 'Tables dropped successfully! Run /migrate to recreate them.' });
     } catch (error) {
