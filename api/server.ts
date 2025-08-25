@@ -316,14 +316,14 @@ app.get('/migrate', async (req, res) => {
 app.get('/seed', async (req, res) => {
     try {
         console.log('Seeding database...');
-        
+
         // Create Frontend Foundations path
         const path = await prisma.path.create({
             data: {
                 title: "Frontend Foundations",
                 description: "Learn the fundamentals of frontend development",
                 slug: "frontend-foundations",
-                orderIndex: 1
+                isPublished: true
             }
         });
         console.log('Created path:', path.title);
