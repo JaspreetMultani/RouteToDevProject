@@ -342,6 +342,25 @@ app.get('/drop-tables', async (req, res) => {
     }
 });
 
+// Add debug route to check database state
+app.get('/debug', async (req, res) => {
+    try {
+        const paths = await prisma.path.findMany();
+        const modules = await prisma.module.findMany();
+        const resources = await prisma.resource.findMany();
+        
+        res.json({
+            paths: paths.length,
+            modules: modules.length,
+            resources: resources.length,
+            pathDetails: paths.map(p => ({ id: p.id, title: p.title, slug: p.slug })),
+            moduleDetails: modules.map(m => ({ id: m.id, title: m.title, pathId: m.pathId }))
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Add seed data route (remove this after seeding is done)
 app.get('/seed', async (req, res) => {
     try {
@@ -592,44 +611,44 @@ app.get("/", async (req, res) => {
             },
         });
         console.log('Found paths:', rawPaths.length);
-    let resourceDoneMap: Record<number, boolean> = {};
-    if (req.session.userId) {
-        const allResourceIds = rawPaths.flatMap((p) => p.modules.flatMap((m) => m.resources.map((r) => r.id)));
-        if (allResourceIds.length > 0) {
-            const progressRows = await prisma.progress.findMany({
-                where: { userId: req.session.userId, resourceId: { in: allResourceIds } },
-                select: { resourceId: true, status: true },
-            });
-            resourceDoneMap = Object.fromEntries(progressRows.map((r) => [r.resourceId, r.status === "DONE"]));
-        }
-    }
-    const paths = rawPaths.map((p) => {
-        const resources = p.modules.flatMap((m) => m.resources);
-        const total = resources.length;
-        const done = resources.filter((r) => resourceDoneMap[r.id]).length;
-        const percent = total > 0 ? Math.round((done / total) * 100) : 0;
-        let nextUrl: string | null = null;
-        outer: for (const m of p.modules) {
-            for (const r of m.resources) {
-                if (!resourceDoneMap[r.id]) {
-                    nextUrl = r.url;
-                    break outer;
-                }
+        let resourceDoneMap: Record<number, boolean> = {};
+        if (req.session.userId) {
+            const allResourceIds = rawPaths.flatMap((p) => p.modules.flatMap((m) => m.resources.map((r) => r.id)));
+            if (allResourceIds.length > 0) {
+                const progressRows = await prisma.progress.findMany({
+                    where: { userId: req.session.userId, resourceId: { in: allResourceIds } },
+                    select: { resourceId: true, status: true },
+                });
+                resourceDoneMap = Object.fromEntries(progressRows.map((r) => [r.resourceId, r.status === "DONE"]));
             }
         }
-        return {
-            title: p.title,
-            slug: p.slug,
-            description: p.description,
-            modulesCount: p.modules.length,
-            progress: { percent, done, total },
-            nextUrl,
-        };
-    });
-    res.render("index", { paths });
+        const paths = rawPaths.map((p) => {
+            const resources = p.modules.flatMap((m) => m.resources);
+            const total = resources.length;
+            const done = resources.filter((r) => resourceDoneMap[r.id]).length;
+            const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+            let nextUrl: string | null = null;
+            outer: for (const m of p.modules) {
+                for (const r of m.resources) {
+                    if (!resourceDoneMap[r.id]) {
+                        nextUrl = r.url;
+                        break outer;
+                    }
+                }
+            }
+            return {
+                title: p.title,
+                slug: p.slug,
+                description: p.description,
+                modulesCount: p.modules.length,
+                progress: { percent, done, total },
+                nextUrl,
+            };
+        });
+        res.render("index", { paths });
     } catch (error) {
         console.error('Error loading homepage:', error);
-        res.status(500).render('error', { 
+        res.status(500).render('error', {
             message: 'Something went wrong',
             error: process.env.NODE_ENV === 'development' ? error : {}
         });
