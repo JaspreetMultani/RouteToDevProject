@@ -184,8 +184,9 @@ app.get('/migrate', async (req, res) => {
         await prisma.$connect();
         console.log('Database connection successful');
 
-        // Create tables using raw SQL
-        const createTablesSQL = `
+        // Create tables using raw SQL - simplified version
+        console.log('Creating Path table...');
+        await prisma.$executeRawUnsafe(`
             CREATE TABLE IF NOT EXISTS "Path" (
                 "id" SERIAL PRIMARY KEY,
                 "title" TEXT NOT NULL,
@@ -194,7 +195,10 @@ app.get('/migrate', async (req, res) => {
                 "orderIndex" INTEGER NOT NULL,
                 "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
+        `);
 
+        console.log('Creating User table...');
+        await prisma.$executeRawUnsafe(`
             CREATE TABLE IF NOT EXISTS "User" (
                 "id" SERIAL PRIMARY KEY,
                 "email" TEXT NOT NULL UNIQUE,
@@ -208,7 +212,10 @@ app.get('/migrate', async (req, res) => {
                 "emailVerificationExpires" TIMESTAMP(3),
                 "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
+        `);
 
+        console.log('Creating Module table...');
+        await prisma.$executeRawUnsafe(`
             CREATE TABLE IF NOT EXISTS "Module" (
                 "id" SERIAL PRIMARY KEY,
                 "pathId" INTEGER NOT NULL,
@@ -218,7 +225,10 @@ app.get('/migrate', async (req, res) => {
                 "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY ("pathId") REFERENCES "Path"("id") ON DELETE CASCADE
             );
+        `);
 
+        console.log('Creating Quiz table...');
+        await prisma.$executeRawUnsafe(`
             CREATE TABLE IF NOT EXISTS "Quiz" (
                 "id" SERIAL PRIMARY KEY,
                 "moduleId" INTEGER NOT NULL,
@@ -227,7 +237,10 @@ app.get('/migrate', async (req, res) => {
                 "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY ("moduleId") REFERENCES "Module"("id") ON DELETE CASCADE
             );
+        `);
 
+        console.log('Creating Question table...');
+        await prisma.$executeRawUnsafe(`
             CREATE TABLE IF NOT EXISTS "Question" (
                 "id" SERIAL PRIMARY KEY,
                 "quizId" INTEGER NOT NULL,
@@ -239,7 +252,10 @@ app.get('/migrate', async (req, res) => {
                 "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY ("quizId") REFERENCES "Quiz"("id") ON DELETE CASCADE
             );
+        `);
 
+        console.log('Creating QuizPurchase table...');
+        await prisma.$executeRawUnsafe(`
             CREATE TABLE IF NOT EXISTS "QuizPurchase" (
                 "id" SERIAL PRIMARY KEY,
                 "userId" INTEGER NOT NULL,
@@ -252,7 +268,10 @@ app.get('/migrate', async (req, res) => {
                 FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
                 FOREIGN KEY ("pathId") REFERENCES "Path"("id") ON DELETE CASCADE
             );
+        `);
 
+        console.log('Creating QuizAttempt table...');
+        await prisma.$executeRawUnsafe(`
             CREATE TABLE IF NOT EXISTS "QuizAttempt" (
                 "id" SERIAL PRIMARY KEY,
                 "userId" INTEGER NOT NULL,
@@ -264,7 +283,10 @@ app.get('/migrate', async (req, res) => {
                 FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
                 FOREIGN KEY ("quizId") REFERENCES "Quiz"("id") ON DELETE CASCADE
             );
+        `);
 
+        console.log('Creating UserProgress table...');
+        await prisma.$executeRawUnsafe(`
             CREATE TABLE IF NOT EXISTS "UserProgress" (
                 "id" SERIAL PRIMARY KEY,
                 "userId" INTEGER NOT NULL,
@@ -276,9 +298,8 @@ app.get('/migrate', async (req, res) => {
                 FOREIGN KEY ("moduleId") REFERENCES "Module"("id") ON DELETE CASCADE,
                 UNIQUE("userId", "moduleId")
             );
-        `;
+        `);
 
-        await prisma.$executeRawUnsafe(createTablesSQL);
         console.log('Tables created successfully');
         res.json({ message: 'Database tables created successfully!' });
     } catch (error) {
