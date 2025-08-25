@@ -579,16 +579,19 @@ app.post("/checkout/premium", requireAuth, async (req, res) => {
     }
 });
 app.get("/", async (req, res) => {
-    const rawPaths = await prisma.path.findMany({
-        where: { isPublished: true },
-        orderBy: { createdAt: "asc" },
-        include: {
-            modules: {
-                orderBy: { orderIndex: "asc" },
-                include: { resources: { orderBy: { id: "asc" } } },
+    try {
+        console.log('Loading homepage...');
+        const rawPaths = await prisma.path.findMany({
+            where: { isPublished: true },
+            orderBy: { createdAt: "asc" },
+            include: {
+                modules: {
+                    orderBy: { orderIndex: "asc" },
+                    include: { resources: { orderBy: { id: "asc" } } },
+                },
             },
-        },
-    });
+        });
+        console.log('Found paths:', rawPaths.length);
     let resourceDoneMap: Record<number, boolean> = {};
     if (req.session.userId) {
         const allResourceIds = rawPaths.flatMap((p) => p.modules.flatMap((m) => m.resources.map((r) => r.id)));
@@ -624,6 +627,13 @@ app.get("/", async (req, res) => {
         };
     });
     res.render("index", { paths });
+    } catch (error) {
+        console.error('Error loading homepage:', error);
+        res.status(500).render('error', { 
+            message: 'Something went wrong',
+            error: process.env.NODE_ENV === 'development' ? error : {}
+        });
+    }
 });
 app.get("/p/:slug", async (req, res) => {
     const { slug } = req.params;
