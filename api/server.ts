@@ -311,6 +311,65 @@ app.get('/migrate', async (req, res) => {
         });
     }
 });
+
+// Add seed data route (remove this after seeding is done)
+app.get('/seed', async (req, res) => {
+    try {
+        console.log('Seeding database...');
+        
+        // Create Frontend Foundations path
+        const path = await prisma.path.create({
+            data: {
+                title: "Frontend Foundations",
+                description: "Learn the fundamentals of frontend development",
+                slug: "frontend-foundations",
+                orderIndex: 1
+            }
+        });
+        console.log('Created path:', path.title);
+
+        // Create modules
+        const modules = [
+            { title: "HTML Semantics & Document Structure", orderIndex: 1 },
+            { title: "CSS Fundamentals & Box Model", orderIndex: 2 },
+            { title: "CSS Layout & Flexbox", orderIndex: 3 },
+            { title: "CSS Grid & Advanced Layouts", orderIndex: 4 },
+            { title: "JavaScript Basics & Variables", orderIndex: 5 },
+            { title: "JavaScript Functions & Scope", orderIndex: 6 },
+            { title: "JavaScript Arrays & Objects", orderIndex: 7 },
+            { title: "JavaScript DOM Manipulation", orderIndex: 8 },
+            { title: "JavaScript Events & Event Handling", orderIndex: 9 },
+            { title: "JavaScript Async Programming", orderIndex: 10 },
+            { title: "JavaScript ES6+ Features", orderIndex: 11 },
+            { title: "JavaScript Error Handling", orderIndex: 12 },
+            { title: "Responsive Design Principles", orderIndex: 13 },
+            { title: "CSS Media Queries", orderIndex: 14 },
+            { title: "CSS Preprocessors (Sass/SCSS)", orderIndex: 15 },
+            { title: "CSS Frameworks (Bootstrap/Tailwind)", orderIndex: 16 },
+            { title: "Web Accessibility (a11y)", orderIndex: 17 },
+            { title: "Performance Optimization", orderIndex: 18 }
+        ];
+
+        for (const moduleData of modules) {
+            await prisma.module.create({
+                data: {
+                    ...moduleData,
+                    pathId: path.id,
+                    description: `Learn ${moduleData.title.toLowerCase()}`
+                }
+            });
+        }
+        console.log('Created', modules.length, 'modules');
+
+        res.json({ message: 'Database seeded successfully!', pathId: path.id, moduleCount: modules.length });
+    } catch (error) {
+        console.error('Seeding failed:', error);
+        res.status(500).json({
+            error: 'Seeding failed',
+            details: error.message
+        });
+    }
+});
 app.use(
     session({
         secret: SESSION_SECRET,
