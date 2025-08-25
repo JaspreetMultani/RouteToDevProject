@@ -192,8 +192,9 @@ app.get('/migrate', async (req, res) => {
                 "title" TEXT NOT NULL,
                 "description" TEXT,
                 "slug" TEXT NOT NULL UNIQUE,
-                "orderIndex" INTEGER NOT NULL,
-                "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+                "isPublished" BOOLEAN NOT NULL DEFAULT false,
+                "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
         `);
 
