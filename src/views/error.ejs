@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Error — RouteToDev</title>
     <link href="/styles.css" rel="stylesheet">
 </head>
+
 <body>
     <div style="position: fixed; top: var(--space-4); left: var(--space-4); z-index: 100;">
         <a href="/" class="navbar-brand"
@@ -26,9 +28,9 @@
                 <div class="card-body">
                     <div class="text-center">
                         <h2 style="color: var(--gray-100); font-size: 1.25rem; margin-bottom: var(--space-4);">
-                            <%= error.message %>
+                            <%= (error && error.message) ? error.message : 'Internal Server Error' %>
                         </h2>
-                        <% if (isDev && error.stack) { %>
+                        <% if (typeof isDev !=='undefined' && isDev && error && error.stack) { %>
                             <div
                                 style="background: var(--gray-800); padding: var(--space-4); border-radius: var(--radius-md); margin-bottom: var(--space-4);">
                                 <pre
@@ -46,4 +48,5 @@
         </div>
     </div>
 </body>
+
 </html>

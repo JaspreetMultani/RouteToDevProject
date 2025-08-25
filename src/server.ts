@@ -553,7 +553,9 @@ app.post("/login", authLimiter, async (req, res) => {
     if (!user || !user.passwordHash || !(await bcrypt.compare(password, user.passwordHash))) {
         return res.status(401).render("login", { error: "Invalid credentials.", next: nextUrl });
     }
-    if (!user.emailVerified) {
+    // Skip email verification requirement in development to ease local testing
+    const isDev = process.env.NODE_ENV !== 'production';
+    if (!isDev && !user.emailVerified) {
         return res.status(401).render("login", {
             error: "Please verify your email address before logging in. Check your email for a verification link.",
             next: nextUrl
@@ -568,6 +570,41 @@ app.post("/logout", (req, res) => {
         res.redirect("/");
     });
 });
+
+// Development helper: grant access without webhooks (premium or path)
+app.get("/dev/grant", requireAuth, async (req, res) => {
+    try {
+        const allow = process.env.NODE_ENV !== 'production' || process.env.ALLOW_DEV_ROUTES === 'true';
+        if (!allow) return res.status(404).send("Not found");
+        const mode = String(req.query.mode || "").toLowerCase();
+        const userId = req.session.userId!;
+        if (mode === "premium") {
+            await prisma.user.update({ where: { id: userId }, data: { isPremium: true } });
+            return res.json({ ok: true, granted: "premium" });
+        }
+        if (mode === "path") {
+            const slug = String(req.query.slug || "");
+            if (!slug) return res.status(400).json({ error: "missing slug" });
+            const p = await prisma.path.findUnique({ where: { slug } });
+            if (!p) return res.status(404).json({ error: "path not found" });
+            await prisma.quizPurchase.create({
+                data: {
+                    userId,
+                    pathId: p.id,
+                    purchaseType: "PATH_BUNDLE",
+                    amount: 5,
+                    isActive: true
+                }
+            });
+            return res.json({ ok: true, granted: "path", slug });
+        }
+        return res.status(400).json({ error: "use ?mode=premium or ?mode=path&slug=..." });
+    } catch (e) {
+        const err: any = e;
+        return res.status(500).json({ error: err?.message ?? String(err) });
+    }
+});
+
 app.post("/progress", requireAuth, async (req, res) => {
     try {
         const userId = req.session.userId!;

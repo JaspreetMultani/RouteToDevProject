@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — RouteToDev</title>
     <link href="/styles.css" rel="stylesheet">
 </head>
+
 <body>
     <div style="position: fixed; top: var(--space-4); left: var(--space-4); z-index: 100;">
         <a href="/" class="navbar-brand"
@@ -30,12 +32,12 @@
             </div>
             <div class="card">
                 <div class="card-body">
-                    <% if (message) { %>
+                    <% if (typeof message !=='undefined' && message) { %>
                         <div class="alert alert-success mb-4">
                             <%= message %>
                         </div>
                         <% } %>
-                            <% if (error) { %>
+                            <% if (typeof error !=='undefined' && error) { %>
                                 <div class="alert alert-error mb-4">
                                     <%= error %>
                                 </div>
@@ -52,6 +54,8 @@
                                             <input type="password" name="password" id="password" required
                                                 class="form-input" placeholder="Enter your password">
                                         </div>
+                                        <input type="hidden" name="next"
+                                            value="<%= typeof next !== 'undefined' ? next : '/' %>" />
                                         <div class="form-group" style="margin-bottom: 0;">
                                             <button type="submit" class="btn btn-primary w-full">
                                                 Sign in
@@ -70,4 +74,5 @@
         </div>
     </div>
 </body>
+
 </html>
