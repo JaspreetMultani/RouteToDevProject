@@ -313,6 +313,36 @@ app.get('/migrate', async (req, res) => {
     }
 });
 
+// Add drop tables route (remove this after tables are recreated)
+app.get('/drop-tables', async (req, res) => {
+    try {
+        console.log('Dropping existing tables...');
+        
+        await prisma.$executeRawUnsafe(`
+            DROP TABLE IF EXISTS "UserProgress" CASCADE;
+            DROP TABLE IF EXISTS "QuizAttempt" CASCADE;
+            DROP TABLE IF EXISTS "QuizPurchase" CASCADE;
+            DROP TABLE IF EXISTS "Question" CASCADE;
+            DROP TABLE IF EXISTS "Quiz" CASCADE;
+            DROP TABLE IF EXISTS "Resource" CASCADE;
+            DROP TABLE IF EXISTS "Progress" CASCADE;
+            DROP TABLE IF EXISTS "Account" CASCADE;
+            DROP TABLE IF EXISTS "Module" CASCADE;
+            DROP TABLE IF EXISTS "Path" CASCADE;
+            DROP TABLE IF EXISTS "User" CASCADE;
+        `);
+        
+        console.log('Tables dropped successfully');
+        res.json({ message: 'Tables dropped successfully! Run /migrate to recreate them.' });
+    } catch (error) {
+        console.error('Drop tables failed:', error);
+        res.status(500).json({
+            error: 'Drop tables failed',
+            details: error.message
+        });
+    }
+});
+
 // Add seed data route (remove this after seeding is done)
 app.get('/seed', async (req, res) => {
     try {
